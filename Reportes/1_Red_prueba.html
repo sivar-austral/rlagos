@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.552">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rubén Lagos">
+<meta name="dcterms.date" content="2024-03-27">
+
+<title>Primeras salidas: Parte 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="1_Red_prueba_files/libs/clipboard/clipboard.min.js"></script>
+<script src="1_Red_prueba_files/libs/quarto-html/quarto.js"></script>
+<script src="1_Red_prueba_files/libs/quarto-html/popper.min.js"></script>
+<script src="1_Red_prueba_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="1_Red_prueba_files/libs/quarto-html/anchor.min.js"></script>
+<link href="1_Red_prueba_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="1_Red_prueba_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="1_Red_prueba_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="1_Red_prueba_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="1_Red_prueba_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Primeras salidas: Parte 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rubén Lagos </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 27, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Este notebook busca implementar una red neuronal de tipo deconvolucional para obtener las primeras salidas. Los datos utilizados fueron obtenidos mediante el código del archivo: <code>Sivar_as_functions.py</code>.</p>
+<p>Para trabajar con los datos, crearemos una variable que contenga los parches asociados a cada caso (es decir, a cada carpeta) ya que se detectó, durante el proceso de cortado, que habían casos con 121 registros temporales y otros únicamente con 120. La estructura de la variable que contendrá toda la información será un diccionario anidado cuya key principal será la variable meteorológica respectiva y su diccionario interno contendrá dicha información para cada uno de los caso. Por ejemplo:</p>
+<pre><code>stack= { "wspd_wdir10" : { "caso_1" : valores, "caso_2", valores, ... , "caso_n": valores} },
+          "HGT"        : { "caso_1" : valores, "caso_2: valores, ..., "caso_n": valores}}
+          ... , 
+       {  "times", {...}}</code></pre>
+<p>Cabe mencionar que el pipeline utilizado está estrictamente basado en un trabajo anterior en el cual se implementó una red de tipo residual para el <em>downscaling</em> de temperatura.</p>
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<p>Pequeño disclaimer: El código implementado no está diseñado especificamente para la variable de viento ni tampoco ha sido corregido con las últimas observaciones. Sin embargo, como lo que se requiere es obtener las primeras salidas, se utilizará de todas maneras.</p>
+</blockquote>
+</blockquote>
+<p>Nota: un detalle interesante es que la variable <code>times</code> contiene un valor constante repetido y no es un tensor como tal (aún).</p>
+<section id="creación-del-stack" class="level5">
+<h5 class="anchored" data-anchor-id="creación-del-stack">Creación del stack</h5>
+<p>Trabajaremos con 5 variables: <code>["wspd_wdir10_0","HGT", "XLAT","XLONG","times" ]</code>. - wspd_wdir10_0: velocidad del viento. - “HGT: terrain height - XLAT: latitud - XLONG: longitud - times: registro temporal asociado.</p>
+<p>Es importante aclarar que cada caso contiene tanto los valores del dominio d03 como d05. Más en específico, los primeros 120 archivos corresponden al dominio d03 y los 120 restantes al dominio d05.</p>
+<div id="cell-2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow <span class="im">as</span> tf</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>path<span class="op">=</span><span class="st">"./salidas_parche_big03/"</span> <span class="co">#Carpeta que contiene la info</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>variables<span class="op">=</span>[<span class="st">"wspd_wdir10_0"</span>, <span class="st">"wspd_wdir10_1"</span>, <span class="st">"HGT"</span>, <span class="st">"XLAT"</span>,<span class="st">"XLONG"</span>,<span class="st">"times"</span> ] <span class="co">#también son los nombres de las subcarpetas</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>casos<span class="op">=</span>[<span class="st">'2016_05_01'</span>, <span class="st">'2016_12_13'</span>, <span class="st">'2018_03_21'</span>, <span class="st">'2020_01_16'</span>, <span class="st">'2020_01_31'</span>] <span class="co">#fecha de los casos</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-3" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>stack<span class="op">=</span> {key: <span class="st">''</span> <span class="cf">for</span> key <span class="kw">in</span> variables} <span class="co">#dic. con toda la información</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> var <span class="kw">in</span> variables:</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    stack_casos<span class="op">=</span> {key: <span class="st">''</span> <span class="cf">for</span> key <span class="kw">in</span> casos} <span class="co">#dic con la informacion de cada caso</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> caso <span class="kw">in</span> casos: </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        rutas_npys<span class="op">=</span>path <span class="op">+</span> var <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> caso <span class="co">#ruta de la carpeta donde se encuentran los archivos a importar</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        archivos<span class="op">=</span> os.listdir(rutas_npys) <span class="co">#lista con los archivos</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        archivos_npy <span class="op">=</span> [archivo <span class="cf">for</span> archivo <span class="kw">in</span> archivos <span class="cf">if</span> archivo.endswith(<span class="st">'.npy'</span>)] <span class="co">#filtrado de .npy</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        parches_npy<span class="op">=</span>[] </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="bu">len</span>(archivos_npy) <span class="op">==</span> <span class="dv">240</span>: <span class="co">#eliminamos el último registro temporal de cada dominio</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            archivos_npy.pop(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            archivos_npy.pop(<span class="dv">120</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> archivo_npy <span class="kw">in</span> archivos_npy: <span class="co">#cargamos todos los archivos .npy</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            ruta<span class="op">=</span>os.path.join(rutas_npys, archivo_npy)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            parche<span class="op">=</span> np.load(ruta)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            parches_npy.append(parche)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> var <span class="op">!=</span> <span class="st">'times'</span>: <span class="co">#la variable times requiere un tratamiento especial al ser una ctte.</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            stack_casos[caso] <span class="op">=</span> tf.convert_to_tensor(parches_npy)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>            stack_casos[caso] <span class="op">=</span> parches_npy</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"variable </span><span class="sc">{</span>var<span class="sc">}</span><span class="ss"> lista"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    stack[var] <span class="op">=</span> stack_casos <span class="co">#guardamos el dic con los casos en su respectiva key</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>variable wspd_wdir10_0 lista
+variable wspd_wdir10_1 lista
+variable HGT lista
+variable XLAT lista
+variable XLONG lista
+variable times lista
+CPU times: total: 15.6 s
+Wall time: 1min 58s</code></pre>
+</div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> var <span class="kw">in</span> variables:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Para </span><span class="sc">{</span>var<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> caso <span class="kw">in</span> casos:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> var <span class="op">!=</span> <span class="st">"times"</span>:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Dimensiones caso </span><span class="sc">{</span>caso<span class="sc">}</span><span class="ss">: "</span>, stack[var][caso].shape)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Dimensiones times: "</span>,<span class="bu">len</span>(stack[var][caso]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Para wspd_wdir10_0
+Dimensiones caso 2016_05_01:  (240, 1, 156, 32, 32)
+Dimensiones caso 2016_12_13:  (240, 1, 156, 32, 32)
+Dimensiones caso 2018_03_21:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_16:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_31:  (240, 1, 156, 32, 32)
+Para wspd_wdir10_1
+Dimensiones caso 2016_05_01:  (240, 1, 156, 32, 32)
+Dimensiones caso 2016_12_13:  (240, 1, 156, 32, 32)
+Dimensiones caso 2018_03_21:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_16:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_31:  (240, 1, 156, 32, 32)
+Para HGT
+Dimensiones caso 2016_05_01:  (240, 1, 156, 32, 32)
+Dimensiones caso 2016_12_13:  (240, 1, 156, 32, 32)
+Dimensiones caso 2018_03_21:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_16:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_31:  (240, 1, 156, 32, 32)
+Para XLAT
+Dimensiones caso 2016_05_01:  (240, 1, 156, 32, 32)
+Dimensiones caso 2016_12_13:  (240, 1, 156, 32, 32)
+Dimensiones caso 2018_03_21:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_16:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_31:  (240, 1, 156, 32, 32)
+Para XLONG
+Dimensiones caso 2016_05_01:  (240, 1, 156, 32, 32)
+Dimensiones caso 2016_12_13:  (240, 1, 156, 32, 32)
+Dimensiones caso 2018_03_21:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_16:  (240, 1, 156, 32, 32)
+Dimensiones caso 2020_01_31:  (240, 1, 156, 32, 32)
+Para times
+Dimensiones times:  240
+Dimensiones times:  240
+Dimensiones times:  240
+Dimensiones times:  240
+Dimensiones times:  240</code></pre>
+</div>
+</div>
+</section>
+<section id="compatibilización-de-las-variables" class="level4">
+<h4 class="anchored" data-anchor-id="compatibilización-de-las-variables">Compatibilización de las variables:</h4>
+<p>Al completar el proceso de importación de los datos, se pudo observar que cada carpeta contiene 120 registros temporales, y cada registro temporal tiene asociado 156 parches de tamaño 32 x 32. Esto da un total de 18720 parches por caso, y 93600 parches en total para cada variable. Sin embargo, la arquitectura a implementar exige que los parches sean de la forma (n,3,32,32,1) donde <span class="math inline">\(n\)</span> es la cantidad de parches para cada variable. Para lograr esta compatibilización, se implementará el método <code>tf.reshape</code>de tensorflow que permite permutar las dimensiones de un tensor, en este caso lo que haremos es unificar a través de una concatenación los 156 parches asociado a los 120 registros temporales y luego concatenar nuevamente para cada uno de los casos. A través de este método lo que se obtiene es un tensor de dimensiones (93600, 1, 32, 32, 1) para cada variable a utilizar.</p>
+<div id="cell-6" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reshape_tensor(var, stack, caso<span class="op">=</span>casos, <span class="bu">input</span><span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    bloque<span class="op">=</span> tf.zeros([<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>, <span class="dv">1</span>], dtype<span class="op">=</span>tf.float32)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> caso <span class="kw">in</span> casos:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        valores<span class="op">=</span> stack[var][caso][<span class="dv">120</span>:] <span class="cf">if</span> <span class="kw">not</span> <span class="bu">input</span> <span class="cf">else</span> stack[var][caso][:<span class="dv">120</span>] </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        valores_reshape<span class="op">=</span> tf.reshape(valores,(valores.shape[<span class="dv">0</span>] <span class="op">*</span> valores.shape[<span class="dv">2</span>], valores.shape[<span class="dv">1</span>], valores.shape[<span class="dv">3</span>], valores.shape[<span class="dv">4</span>],<span class="dv">1</span>))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        bloque<span class="op">=</span>tf.concat( [bloque, valores_reshape], axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    bloque<span class="op">=</span>bloque[<span class="dv">1</span>:] <span class="co">#eliminamos el valor inicial </span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(bloque.shape)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bloque</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>vientos_target<span class="op">=</span>reshape_tensor(var<span class="op">=</span>variables[<span class="dv">0</span>],stack<span class="op">=</span>stack, <span class="bu">input</span><span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>vientos_input <span class="op">=</span>reshape_tensor(var<span class="op">=</span>variables[<span class="dv">0</span>],stack<span class="op">=</span>stack, <span class="bu">input</span><span class="op">=</span><span class="va">True</span>) <span class="co">#toma los primeros 120 valores correspondientes al d03</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>orog          <span class="op">=</span>reshape_tensor(var<span class="op">=</span>variables[<span class="dv">2</span>],stack<span class="op">=</span>stack, <span class="bu">input</span><span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>lat           <span class="op">=</span>reshape_tensor(var<span class="op">=</span>variables[<span class="dv">3</span>],stack<span class="op">=</span>stack, <span class="bu">input</span><span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>lon           <span class="op">=</span>reshape_tensor(var<span class="op">=</span>variables[<span class="dv">4</span>],stack<span class="op">=</span>stack, <span class="bu">input</span><span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(93600, 1, 32, 32, 1)
+(93600, 1, 32, 32, 1)
+(93600, 1, 32, 32, 1)
+(93600, 1, 32, 32, 1)
+(93600, 1, 32, 32, 1)</code></pre>
+</div>
+</div>
+<p>Para comprobar que el proceso es el correcto, se compararán los primeros 156 valores contenidos en el caso 1 del stack entero para la variable viento, con los 156 primeros parches de la variable <code>vientos_input</code>:</p>
+<div id="cell-8" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>tensor_old<span class="op">=</span> tf.squeeze( stack[variables[<span class="dv">0</span>]][casos[<span class="dv">0</span>]][<span class="dv">0</span>] ) <span class="co">#eliminar las dimensiones de tamaño 1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>tensor_new<span class="op">=</span> tf.squeeze( vientos_input[:<span class="dv">156</span>] ) <span class="co">#lo mismo que antes</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"dimensiones del tensor original: "</span>, tensor_old.shape)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"dimensiones del tensor original: "</span>, tensor_new.shape)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>comparacion<span class="op">=</span> tf.reduce_all(tf.equal(tensor_old, tensor_new)) <span class="co">#comparacion valor por valor</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> comparacion: </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Los tensores son iguales"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Los tensores son diferentes"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>dimensiones del tensor original:  (156, 32, 32)
+dimensiones del tensor original:  (156, 32, 32)
+Los tensores son iguales</code></pre>
+</div>
+</div>
+</section>
+<section id="visualización-de-los-parches" class="level4">
+<h4 class="anchored" data-anchor-id="visualización-de-los-parches">Visualización de los parches:</h4>
+<div id="cell-visualizacion_parches" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>i<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].imshow( tf.squeeze(vientos_input)[<span class="dv">1</span>]  , cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f"vientos_input[</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">}</span><span class="ss">]"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].imshow(tf.squeeze(vientos_target)[<span class="dv">1</span>] , cmap<span class="op">=</span><span class="st">'plasma'</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f"vientos_target[</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">}</span><span class="ss">]"</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].imshow(tf.squeeze(orog)[<span class="dv">1</span>] , cmap<span class="op">=</span><span class="st">'inferno'</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f"orog[</span><span class="sc">{</span><span class="bu">str</span>(i)<span class="sc">}</span><span class="ss">]"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="1_Red_prueba_files/figure-html/visualizacion_parches-output-1.png" class="img-fluid figure-img"></p>
+<figcaption>Visualización del primer parche para el inp, target y orog</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="caso-especial-variable-time2" class="level4">
+<h4 class="anchored" data-anchor-id="caso-especial-variable-time2">Caso especial: variable time2</h4>
+<p>Debido a que la variable <code>times</code> está importada como un valor constante y no como parches de tamaño (32,32), lo que haremos es expandir el valor importado a las dimensiones de los parches requeridos y luego repetimos este nuevo parche una cantidad igual a los 156 parches asociados a cada registro temporal (recordar que no existe variabilidad temporal al movernos en el espacio), para finalmente concatenar cada stack de parches temporales construidos:</p>
+<div id="cell-12" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>stack_time<span class="op">=</span> tf.zeros([<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>, <span class="dv">1</span>]) <span class="co">#inicializamos un stack con las dimensiones requeridas</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> caso <span class="kw">in</span> casos:</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">120</span>): </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        tiempo<span class="op">=</span>  tf.fill([<span class="dv">32</span>, <span class="dv">32</span>], stack[variables[<span class="op">-</span><span class="dv">1</span>]][caso][i].astype(np.float32) ) <span class="co">#llenamos un parche (32,32) con el registro temporal</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        tiempo<span class="op">=</span> tf.reshape(tiempo, [<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">32</span>, <span class="dv">32</span>, <span class="dv">1</span>]) <span class="co">#expandimos a las nuevas dimensiones requeridas</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        tiempo<span class="op">=</span>  tf.repeat(tiempo, <span class="dv">156</span>, axis<span class="op">=</span><span class="dv">0</span>) <span class="co"># repetivos 156 veces el parche temporal creado</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        stack_time<span class="op">=</span>tf.concat( [stack_time, tiempo], axis<span class="op">=</span><span class="dv">0</span>) <span class="co">#concatenamos los parches creados para cada registro temporal</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>time2<span class="op">=</span>stack_time[<span class="dv">1</span>:] <span class="co">#eliminamos el primer valor creado para inicializar el stack_time</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dimensiones tiempo: "</span>,time2.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensiones tiempo:  (93600, 1, 32, 32, 1)</code></pre>
+</div>
+</div>
+</section>
+<section id="normalización-de-los-datos" class="level4">
+<h4 class="anchored" data-anchor-id="normalización-de-los-datos">Normalización de los datos</h4>
+<p>Para favorecer el entrenamiento de la red, normalizaremos CADA VARIABLE en el rango <span class="math inline">\([0,1]\)</span> utilizando la siguiente fórmula: <span class="math display">\[ \text{normalización(variable)} := \dfrac{variable - \min(variable)}{\max(variable) - \min(variable)}= \text{variable norm}\]</span> donde min(variable) y max(variable) corresponderán al mínimo y máximo valor de nuestra variable a normalizar respectivamente y serán guardados como factores de escalado para el proceso de desnormalización.</p>
+<div id="cell-14" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> normalization( data_in<span class="op">=</span><span class="bu">input</span>,inverse<span class="op">=</span><span class="va">False</span>, scale_factor<span class="op">=</span>[<span class="dv">1</span>,<span class="dv">1</span>]):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">'''Método que normaliza los valores entregados.</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">    input:</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">        data_in: [tensor] Tensor con los parches de la variable que forma parte del input de la Red</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">        inverse: [Boolean, default=False] True en caso de devolver la transformación</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">    return: </span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">        variable normalizada</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">    '''</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> inverse:</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        scale_factor_ <span class="op">=</span> np.<span class="bu">max</span>(np.<span class="bu">abs</span>(data_in))</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        scale_factor_2 <span class="op">=</span> np.<span class="bu">min</span>(np.<span class="bu">abs</span>(data_in))</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        data_out <span class="op">=</span> (data_in<span class="op">-</span>scale_factor_2)<span class="op">/</span>(scale_factor_ <span class="op">-</span> scale_factor_2)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        scale_factor_ <span class="op">=</span> [scale_factor_,scale_factor_2]</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        data_out<span class="op">=</span>(data_in <span class="op">*</span> (scale_factor[<span class="dv">0</span>]<span class="op">-</span>scale_factor[<span class="dv">1</span>]))<span class="op">+</span>scale_factor[<span class="dv">1</span>]</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>        scale_factor_ <span class="op">=</span> scale_factor</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> data_out, scale_factor_</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>input_norm, input_factor  <span class="op">=</span> normalization(vientos_input)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>target_norm,target_factor <span class="op">=</span> normalization(vientos_target)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>lat_norm   ,lat_factor    <span class="op">=</span> normalization(lat)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>lon_norm   ,lon_factor    <span class="op">=</span> normalization(lon)</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>orog_norm  ,orog_factor   <span class="op">=</span> normalization(orog)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>time2_norm, time2_factor  <span class="op">=</span> normalization(time2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ahora bien, en el trabajo original los parches contenian un corte temporal que agregaba el panorama de temperatura para el tiempo anterior y el tiempo siguiente. Sin embargo, ya que ahora estamos sobre un tiempo “discreto”, resulta complicado utilizar este mismo procedimiento debido a la considerable diferencia temporal que existe entre cada caso. Lo anterior, sumado a la necesidad de compatilizar las dimensiones, incita a la replicación de los valores en la dimensión requerida 3 veces. En caso de que la red presente problemas de convergencia graves, se debería revisar esta suposición como prioridad.</p>
+<div id="cell-16" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>input_norm_2 <span class="op">=</span> tf.tile(input_norm,[<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>]) <span class="co">#repetimos en la segunda dimension </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>comparacion_2<span class="op">=</span> tf.reduce_all(tf.equal(input_norm[:,<span class="dv">0</span>,:,:,:], input_norm_2[:,<span class="dv">1</span>,:,:,:])) <span class="co">#comparacion valor por valor</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> comparacion_2: </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Los tensores son iguales"</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Los tensores son diferentes"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Los tensores son iguales</code></pre>
+</div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>input_norm <span class="op">=</span> tf.tile(input_norm,[<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>]) <span class="co">#repetición de los valores de la dimensión</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>lat_norm <span class="op">=</span> tf.tile(lat_norm, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>lon_norm <span class="op">=</span> tf.tile(lon_norm, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>orog_norm <span class="op">=</span> tf.tile(orog_norm, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>time2_norm <span class="op">=</span> tf.tile(time2_norm, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>target_norm <span class="op">=</span> tf.tile(target_norm, [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="guardado-de-los-parches-previa-división-incluyendo-los-factores-de-normalización-opcional" class="level4">
+<h4 class="anchored" data-anchor-id="guardado-de-los-parches-previa-división-incluyendo-los-factores-de-normalización-opcional">Guardado de los parches previa división incluyendo los factores de normalización (opcional)</h4>
+<div id="cell-19" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> guardado_parches(parches, nombre_parches, carpeta, opcional<span class="op">=</span><span class="st">''</span>, verbose<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    ruta_completa <span class="op">=</span> os.path.join(carpeta, nombre_parches <span class="op">+</span> opcional <span class="op">+</span> <span class="st">'.npy'</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    np.save(ruta_completa, parches)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> verbose:</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Parches guardados exitosamente como: "</span>, ruta_completa)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>guardado_parches(input_norm, <span class="st">"inp_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>guardado_parches(lat_norm, <span class="st">"lat_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>guardado_parches(lon_norm, <span class="st">"lon_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>guardado_parches(orog_norm, <span class="st">"orog_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>guardado_parches(time2_norm, <span class="st">"time2_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>guardado_parches(target_norm, <span class="st">"target_raw"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>guardado_parches(input_factor, <span class="st">"inp_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>guardado_parches(lat_factor, <span class="st">"lat_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>guardado_parches(lon_factor, <span class="st">"lon_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>guardado_parches(orog_factor, <span class="st">"orog_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>guardado_parches(time2_factor, <span class="st">"time2_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>guardado_parches(target_factor, <span class="st">"target_factor"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="división-de-los-datos" class="level4">
+<h4 class="anchored" data-anchor-id="división-de-los-datos">División de los datos</h4>
+<p>Finalmente la división de los datos se llevará a cabo sin tener ningún tipo de consideración espacial ni temporal específico para nuestra zona objetivo. Solo se reutilizará la misma función que fue implementada originalmente. Es importante destacar que, como el dominio a trabajar fue dividido en 156 cuadrantes y no en 12 como originalmente se hizo, la proporcionalidad en la cantidad de parches por cuadrante no tiene que ser por qué similiar. Sin embargo se espera, de una manera ideal, que cada cuadrante contenga aproximadamente una cantidad igual a <span class="math inline">\(93600/156=600\)</span> parches que serán divididos en 3 conjuntos: entrenamiento, validación y testeo, en una proporción de .60, .20, .20, respectivamente.</p>
+<p>Por último se cambiará el .float32 de cada tensor por .float16, debido a que no se busca precisión sino eficiencia al correr el código.</p>
+<div id="cell-21" class="cell" data-execution_count="23">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mysplit(inp, time, orog, lat, lon, target):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>        <span class="co">''' Método encargado de la división  de todas las variables que conforman el input de la red en: entrenamiento (60%), validación (20%) y testeo.</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">        return:</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">            división de cada variable en testeo, validación y testeo.</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co">        '''</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> tf.concat([tf.cast(inp, dtype<span class="op">=</span>tf.float16),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                      tf.cast(time, dtype<span class="op">=</span>tf.float16),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                      tf.cast(orog, dtype<span class="op">=</span>tf.float16),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                      tf.cast(lat, dtype<span class="op">=</span>tf.float16),</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>                      tf.cast(lon, dtype<span class="op">=</span>tf.float16),</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                      tf.cast(target, dtype<span class="op">=</span>tf.float16)], axis<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> tf.random.shuffle(data, seed<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> data.shape[<span class="dv">0</span>]</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>        n_train <span class="op">=</span> <span class="bu">int</span>(n <span class="op">*</span> <span class="fl">.6</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        n_valid <span class="op">=</span> <span class="bu">int</span>(n <span class="op">*</span> <span class="fl">.2</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>        n_test <span class="op">=</span> n <span class="op">-</span> n_train <span class="op">-</span> n_valid</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> tf.split(data, [n_train, n_valid, n_test])</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (tf.expand_dims(data[<span class="dv">0</span>][:, :, :, :, <span class="dv">0</span>],<span class="dv">4</span>),</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">0</span>][:, :, :, :, <span class="dv">1</span>],<span class="dv">4</span>),</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">0</span>][:, :, :, :, <span class="dv">2</span>],<span class="dv">4</span>),</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">0</span>][:, :, :, :, <span class="dv">3</span>],<span class="dv">4</span>),</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">0</span>][:, :, :, :, <span class="dv">4</span>],<span class="dv">4</span>),</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(tf.expand_dims(data[<span class="dv">0</span>][:,<span class="dv">1</span>,:,:,<span class="dv">5</span>],<span class="dv">1</span>),<span class="dv">4</span>),</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">1</span>][:, :, :, :, <span class="dv">0</span>],<span class="dv">4</span>),</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">1</span>][:, :, :, :, <span class="dv">1</span>],<span class="dv">4</span>),</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">1</span>][:, :, :, :, <span class="dv">2</span>],<span class="dv">4</span>),</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">1</span>][:, :, :, :, <span class="dv">3</span>],<span class="dv">4</span>),</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">1</span>][:, :, :, :, <span class="dv">4</span>],<span class="dv">4</span>),</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(tf.expand_dims(data[<span class="dv">1</span>][:,<span class="dv">1</span>,:,:,<span class="dv">5</span>],<span class="dv">1</span>),<span class="dv">4</span>),</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">2</span>][:, :, :, :, <span class="dv">0</span>],<span class="dv">4</span>),</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">2</span>][:, :, :, :, <span class="dv">1</span>],<span class="dv">4</span>),</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">2</span>][:, :, :, :, <span class="dv">2</span>],<span class="dv">4</span>),</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">2</span>][:, :, :, :, <span class="dv">3</span>],<span class="dv">4</span>),</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(data[<span class="dv">2</span>][:, :, :, :, <span class="dv">4</span>],<span class="dv">4</span>),</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>            tf.expand_dims(tf.expand_dims(data[<span class="dv">2</span>][:,<span class="dv">1</span>,:,:,<span class="dv">5</span>],<span class="dv">1</span>),<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="cell-22" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(inp_tr,time_tr,orog_tr,lat_tr,lon_tr,target_tr,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a> inp_va,time_va,orog_va,lat_va,lon_va,target_va,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a> inp_te,time_te, orog_te,lat_te,lon_te, target_te) <span class="op">=</span> mysplit(input_norm,time2_norm,orog_norm,lat_norm,lon_norm,target_norm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="último-ajuste-variable-time2" class="level4">
+<h4 class="anchored" data-anchor-id="último-ajuste-variable-time2">Último ajuste: variable time2</h4>
+<p>Debido a que la variable temporal es una variable que se inserta en el espacio latente de la arquitectura de la red, ésta se debe integrar en tamaños de (4,4) en lugar de (32,32). Para cumplir con esto, tomaremos los primeros 4 valores de cada dimensión.</p>
+<div id="cell-24" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>time_tr<span class="op">=</span>time_tr[:,:,:<span class="dv">4</span>,:<span class="dv">4</span>,:]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>time_va<span class="op">=</span>time_va[:,:,:<span class="dv">4</span>,:<span class="dv">4</span>,:]</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>time_te<span class="op">=</span>time_te[:,:,:<span class="dv">4</span>,:<span class="dv">4</span>,:]</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dimensiones time entrenamiento: "</span>, time_tr.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensiones time entrenamiento:  (56160, 3, 4, 4, 1)</code></pre>
+</div>
+</div>
+<p>Visualización del resto de dimensiones</p>
+<div id="cell-26" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dimensiones variables entrenamiento: "</span>,inp_tr.shape)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dimensiones variables validación: "</span>,inp_va.shape)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dimensiones variables testeo: "</span>,inp_te.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dimensiones variables entrenamiento:  (56160, 3, 32, 32, 1)
+Dimensiones variables validación:  (18720, 3, 32, 32, 1)
+Dimensiones variables testeo:  (18720, 3, 32, 32, 1)</code></pre>
+</div>
+</div>
+</section>
+<section id="guardado-de-parches-omitible" class="level4">
+<h4 class="anchored" data-anchor-id="guardado-de-parches-omitible">Guardado de parches (omitible)</h4>
+<p>Por último, guardaremos cada conjunto creado en una carpeta llamada <code>parches</code> que estará en el mismo directorio que el archivo con el cual estamos trabajando:</p>
+<div id="cell-28" class="cell" data-execution_count="32">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>guardado_parches(inp_tr, <span class="st">"inp_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>guardado_parches(inp_va, <span class="st">"inp_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>guardado_parches(inp_te, <span class="st">"inp_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>guardado_parches(target_tr, <span class="st">"target_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>guardado_parches(target_va, <span class="st">"target_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>guardado_parches(target_te, <span class="st">"target_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>guardado_parches(orog_tr, <span class="st">"orog_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>guardado_parches(orog_va, <span class="st">"orog_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>guardado_parches(orog_te, <span class="st">"orog_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>guardado_parches(lon_tr, <span class="st">"lon_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>guardado_parches(lon_va, <span class="st">"lon_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>guardado_parches(lon_te, <span class="st">"lon_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>guardado_parches(lat_tr, <span class="st">"lat_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>guardado_parches(lat_va, <span class="st">"lat_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>guardado_parches(lat_te, <span class="st">"lat_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>guardado_parches(time_tr, <span class="st">"time_tr"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>guardado_parches(time_va, <span class="st">"time_va"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>)</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>guardado_parches(time_te, <span class="st">"time_te"</span>, <span class="st">"parches"</span>, <span class="st">"_27_03_24"</span>, verbose<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Parches guardados exitosamente como:  parches\time_te_27_03_24.npy</code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
